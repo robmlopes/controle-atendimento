@@ -1,8 +1,11 @@
 """Public routes: business page, professional page and slot query."""
 
+from collections.abc import Sequence
+
 from fastapi import APIRouter, Request
 from fastapi.responses import Response
 
+from domain.models import Service
 from domain.panel import format_price, format_time
 from domain.public import PublicPolicy, day_in_window
 from domain.slots import free_slots
@@ -39,6 +42,19 @@ def business_home(request: Request, slug: str) -> Response:
     return public_page(request, services, "public_home.html", {"business": business, "people": pros})
 
 
+def _service_rows(available: Sequence[Service]) -> list[dict[str, object]]:
+    """Template rows for the services a professional offers."""
+    return [
+        {
+            "id": s.id,
+            "name": s.name,
+            "duration": s.duration_min,
+            "price": None if s.price_cents is None else format_price(s.price_cents),
+        }
+        for s in available
+    ]
+
+
 @router.get("/n/{slug}/p/{professional_id}")
 def professional_slots(request: Request, slug: str, professional_id: int) -> Response:
     services = services_of(request)
@@ -59,15 +75,7 @@ def professional_slots(request: Request, slug: str, professional_id: int) -> Res
         {
             "business": business,
             "pro": pro,
-            "services": [
-                {
-                    "id": s.id,
-                    "name": s.name,
-                    "duration": s.duration_min,
-                    "price": None if s.price_cents is None else format_price(s.price_cents),
-                }
-                for s in available
-            ],
+            "services": _service_rows(available),
             "selected_service_id": sid,
             "selected_day": iso_day(day),
             "selected_day_label": f"{weekday_name(day)}, {br_day(day)}",
