@@ -1,0 +1,29 @@
+[aif]
+source_dirs = ["domain", "ports", "adapters", "web"]
+pure_dirs = ["domain"]            # no I/O, @contract required
+port_dirs = ["ports"]             # interfaces only
+entry_dirs = ["web"]              # web / CLI layers: composition roots
+composition_roots = ["web.app"]   # module that wires adapters into services
+max_file_lines = 200
+max_function_lines = 40
+count_code_lines = true           # AIF005 ignores blank lines, comments and docstrings
+limit_warn_ratio = 0.9            # warn (not fail) at 90% of a limit
+parallel = true                   # mypy, fuzz and pytest run concurrently
+history = true                    # append every check to .aif/history.jsonl (see `aif stats`)
+intents = true                    # validate .aif/intents/*.md
+style = true                      # ruff format + ruff check
+typecheck = true                  # run mypy over source_dirs
+typecheck_tests = true            # ...and over tests/
+fuzz = true                       # property-check every @contract(ensures=...) from type hints
+fuzz_examples = 100
+fuzz_setup = "tests.strategies"   # module registering domain input strategies
+mypy_args = ["--strict"]
+forbidden_imports = ["builtins", "importlib", "os", "sys", "subprocess", "socket", "requests", "urllib", "http", "sqlite3", "pathlib", "shutil", "random", "datetime"]
+forbidden_calls = ["open", "print", "input", "exec", "eval", "compile", "__import__", "getattr", "setattr", "delattr", "globals", "locals", "vars"]
+
+# Third-party packages (top-level import names) that source_dirs may import; must also be in pyproject.toml
+third_party = ["fastapi", "starlette", "jinja2", "argon2", "multipart", "uvicorn"]
+check_third_party = true
+
+# Capability (parameter type) -> effects it grants. Example: DbWrite = ["db.write"]
+[aif.capabilities]

@@ -1,0 +1,97 @@
+{% extends "panel_base.html" %}
+{% block title %}Financeiro — Movimentações e Saldo{% endblock %}
+{% block content %}
+<div class="between" style="margin-bottom:18px">
+  <div>
+    <h1>Financeiro</h1>
+    <p class="lead">Prévia de saldo, repasses de comissão e histórico diário de atendimentos.</p>
+  </div>
+</div>
+
+<div class="sheet" style="margin-bottom:24px">
+  <form method="get" action="/financeiro" data-autosubmit class="between">
+    <div class="pill-group" style="margin:0">
+      <a href="/financeiro?periodo=hoje{% if active_pro_id %}&pro={{ active_pro_id }}{% endif %}" class="pill {% if periodo == 'hoje' %}active{% endif %}">Hoje</a>
+      <a href="/financeiro?periodo=semana{% if active_pro_id %}&pro={{ active_pro_id }}{% endif %}" class="pill {% if periodo == 'semana' %}active{% endif %}">Esta semana</a>
+      <a href="/financeiro?periodo=mes{% if active_pro_id %}&pro={{ active_pro_id }}{% endif %}" class="pill {% if periodo == 'mes' %}active{% endif %}">Este mês</a>
+    </div>
+
+    {% if is_owner and professionals %}
+    <div style="display:flex;gap:8px;align-items:center">
+      <label for="pro" style="margin:0;font-weight:600">Filtrar por:</label>
+      <select id="pro" name="pro" style="width:auto;min-height:38px;padding:6px 10px">
+        <option value="">Toda a equipe (consolidado)</option>
+        {% for p in professionals %}
+        <option value="{{ p.id }}" {% if active_pro_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+  </form>
+</div>
+
+<div class="metrics">
+  <div class="metric highlight">
+    <small class="muted">Saldo Realizado (Comissão)</small>
+    <div class="val">{{ realized }}</div>
+    <small class="muted">{{ completed_count }} atendimento(s) concluído(s)</small>
+  </div>
+  <div class="metric">
+    <small class="muted">Previsão (A Concluir)</small>
+    <div class="val">{{ projected }}</div>
+    <small class="muted">{{ projected_count }} atendimento(s) agendado(s)</small>
+  </div>
+  <div class="metric">
+    <small class="muted">Faturamento Bruto Realizado</small>
+    <div class="val">{{ gross_realized }}</div>
+    <small class="muted">Total cobrado dos clientes</small>
+  </div>
+</div>
+
+<h2>Histórico de movimentações</h2>
+<div class="list">
+  {% for m in movements %}
+  <div class="item">
+    <div class="when">
+      {{ m.date }}
+      <small>{{ m.time }}</small>
+    </div>
+    <div class="grow">
+      <span class="title">{{ m.customer }}</span>
+      <small class="muted">
+        {{ m.service }}
+        {% if is_owner %} · {{ m.professional }}{% endif %}
+      </small>
+      <div style="margin-top:4px">
+        {% if m.status == 'completed' %}
+        <span class="badge completed">Concluído</span>
+        {% elif m.status == 'confirmed' %}
+        <span class="badge confirmed">Confirmado</span>
+        {% else %}
+        <span class="badge cancelled">Cancelado</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="end" style="text-align:right">
+      <div>
+        <span class="price" {% if m.status == 'cancelled' %}style="text-decoration:line-through;color:var(--muted)"{% endif %}>
+          {{ m.commission }}
+        </span>
+        <small class="muted" style="display:block">
+          {% if m.status == 'cancelled' %}
+          cancelado (R$ 0,00)
+          {% else %}
+          {{ m.commission_pct }}% de {{ m.price }}
+          {% endif %}
+        </small>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty">
+    <strong>Nenhuma movimentação registrada no período selecionado.</strong>
+    Os atendimentos concluídos e previstos aparecerão listados aqui automaticamente.
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

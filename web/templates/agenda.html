@@ -1,0 +1,90 @@
+{% extends "panel_base.html" %}
+{% block title %}Agenda — Atendimentos{% endblock %}
+{% block content %}
+<div class="between" style="margin-bottom:18px">
+  <div>
+    <h1>Agenda</h1>
+    <p class="lead">Atendimentos agendados e controle de horários.</p>
+  </div>
+  <div>
+    <a href="/agenda/novo" class="btn">+ Novo agendamento</a>
+  </div>
+</div>
+
+{% if saved %}<div class="success" role="status">Atendimento marcado como concluído com sucesso.</div>{% endif %}
+{% if cancelled %}<div class="success" role="status">Agendamento cancelado com sucesso.</div>{% endif %}
+{% if booked %}<div class="success" role="status">Agendamento cadastrado com sucesso na agenda.</div>{% endif %}
+
+<div class="sheet" style="margin-bottom:24px">
+  <form method="get" action="/agenda" data-autosubmit class="between">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <label for="data" style="margin:0;font-weight:600">Data:</label>
+      <input id="data" name="data" type="date" value="{{ selected_date }}" style="width:auto;min-height:38px;padding:6px 10px">
+
+      {% if is_owner and professionals %}
+      <label for="pro" style="margin:0;margin-left:10px;font-weight:600">Profissional:</label>
+      <select id="pro" name="pro" style="width:auto;min-height:38px;padding:6px 10px">
+        <option value="">Todos os profissionais</option>
+        {% for p in professionals %}
+        <option value="{{ p.id }}" {% if active_pro_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+    </div>
+    <div style="display:flex;gap:8px">
+      <a href="/agenda?data={{ today_date }}{% if active_pro_id %}&pro={{ active_pro_id }}{% endif %}" class="pill {% if is_today %}active{% endif %}">Hoje</a>
+    </div>
+  </form>
+</div>
+
+<div class="list">
+  {% for item in items %}
+  <div class="item">
+    <div class="when">
+      {{ item.start }}
+      <small>{{ item.end }}</small>
+    </div>
+    <div class="grow">
+      <span class="title">{{ item.customer }}</span>
+      <small class="muted">
+        {{ item.service }}
+        {% if is_owner %} · com <strong>{{ item.professional }}</strong>{% endif %}
+        · {{ item.phone }}
+      </small>
+      <div style="margin-top:6px">
+        {% if item.is_confirmed %}
+        <span class="badge confirmed">Confirmado</span>
+        {% elif item.is_completed %}
+        <span class="badge completed">Concluído</span>
+        {% else %}
+        <span class="badge cancelled">Cancelado</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="end">
+      {% if item.whatsapp %}
+      <a class="btn wa sm" href="https://wa.me/{{ item.whatsapp }}" target="_blank" rel="noopener">WhatsApp</a>
+      {% endif %}
+
+      {% if item.is_confirmed %}
+      <form class="inline" method="post" action="/agendamentos/{{ item.id }}/concluir">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="day" value="{{ selected_date }}">
+        <button type="submit" class="sm">Concluir</button>
+      </form>
+      <form class="inline" method="post" action="/agendamentos/{{ item.id }}/cancelar" data-confirm="Tem certeza que deseja cancelar este agendamento?">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" name="day" value="{{ selected_date }}">
+        <button type="submit" class="danger sm">Cancelar</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div class="empty">
+    <strong>Nenhum agendamento para esta data.</strong>
+    Os clientes que agendarem pelo link público aparecerão aqui, ou você pode registrar diretamente pelo botão "+ Novo agendamento".
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

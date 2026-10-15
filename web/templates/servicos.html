@@ -1,0 +1,52 @@
+{% extends "panel_base.html" %}
+{% block title %}Serviços{% endblock %}
+{% block content %}
+<div class="split">
+  <div>
+    <h1>Serviços</h1>
+    <p class="lead">Tipos de atendimento disponíveis para o cliente escolher ao agendar.</p>
+
+    {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+
+    <div class="list">
+      {% for r in rows %}
+      <div class="item">
+        <div class="grow">
+          <span class="title">{{ r.name }}</span>
+          <small class="muted">{{ r.duration }} min · atende: {{ r.pros }}</small>
+        </div>
+        <div class="end">
+          <span class="price">{{ r.price }}</span>
+          <form class="inline" method="post" action="/servicos/{{ r.id }}/desativar" data-confirm="Desativar {{ r.name }}?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="danger sm">Desativar</button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty"><strong>Nenhum serviço cadastrado ainda.</strong>Cadastre o primeiro serviço no formulário ao lado.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <aside>
+    <div class="sheet">
+      <h2>Novo serviço</h2>
+      <form method="post" action="/servicos">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label for="name">Nome do serviço</label>
+        <input id="name" name="name" value="{{ values.name }}" maxlength="80" placeholder="Ex: Corte de Cabelo" required>
+
+        <label for="duration">Duração (em minutos)</label>
+        <input id="duration" name="duration" value="{{ values.duration }}" inputmode="numeric" placeholder="30" required>
+        <span class="hint">Usado para calcular os horários livres na agenda.</span>
+
+        <label for="price">Preço (opcional, R$)</label>
+        <input id="price" name="price" value="{{ values.price }}" inputmode="decimal" placeholder="35,00">
+
+        <div class="actions"><button type="submit" class="block">Cadastrar serviço</button></div>
+      </form>
+    </div>
+  </aside>
+</div>
+{% endblock %}

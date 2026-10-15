@@ -1,0 +1,14 @@
+{% macro brand(name) %}
+<div class="brand">
+  <span class="avatar">{{ name[:1] }}</span>
+  <div><strong>{{ name }}</strong><small>Agendamento online</small></div>
+</div>
+{% endmacro %}
+
+{% macro steps(current) %}
+<ol class="progress" aria-label="Etapas do agendamento">
+  {% for label in ["Profissional", "Horário", "Confirmar"] %}
+  <li class="{{ 'current' if loop.index == current else ('done' if loop.index < current else '') }}"{% if loop.index == current %} aria-current="step"{% endif %}>{{ label }}</li>
+  {% endfor %}
+</ol>
+{% endmacro %}

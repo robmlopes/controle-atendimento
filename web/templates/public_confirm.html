@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "_ui.html" import brand, steps %}
+{% block title %}Confirmar agendamento — {{ business.name }}{% endblock %}
+{% block content %}
+{{ brand(business.name) }}
+{{ steps(3) }}
+<a class="back" href="/n/{{ business.slug }}/p/{{ pro.id }}?servico={{ service.id }}&data={{ day_iso }}">← Escolher outro horário</a>
+<h1>Confirme seu horário</h1>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+
+<dl class="facts">
+  <div><dt>Profissional</dt><dd>{{ pro.name }}</dd></div>
+  <div><dt>Serviço</dt><dd>{{ service.name }} · {{ service.duration_min }} min</dd></div>
+  <div><dt>Quando</dt><dd>{{ day_label }}, {{ start }}</dd></div>
+  {% if price %}<div><dt>Valor</dt><dd>R$ {{ price }}</dd></div>{% endif %}
+</dl>
+
+<form method="post" action="/n/{{ business.slug }}/agendar">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+  <input type="hidden" name="professional_id" value="{{ pro.id }}">
+  <input type="hidden" name="service_id" value="{{ service.id }}">
+  <input type="hidden" name="day_iso" value="{{ day_iso }}">
+  <input type="hidden" name="start_min" value="{{ start_min }}">
+
+  <label for="customer_name">Seu nome</label>
+  <input id="customer_name" name="customer_name" value="{{ customer_name }}" maxlength="80" autocomplete="name" required>
+
+  <label for="customer_phone">Seu WhatsApp</label>
+  <input id="customer_phone" name="customer_phone" value="{{ customer_phone }}" placeholder="(11) 99999-8888" inputmode="tel" autocomplete="tel" required>
+  <span class="hint">Só {{ business.name }} vê este número, para falar com você sobre o horário.</span>
+
+  <div class="actions"><button type="submit" class="block">Confirmar horário</button></div>
+</form>
+{% endblock %}

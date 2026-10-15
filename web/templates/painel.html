@@ -1,0 +1,96 @@
+{% extends "panel_base.html" %}
+{% block title %}Agenda — {{ business.name if business else '' }}{% endblock %}
+{% block content %}
+<div class="between" style="margin-bottom:20px">
+  <div>
+    <h1>Agenda</h1>
+    <p class="lead">Próximos agendamentos e horários marcados.</p>
+  </div>
+  {% if business %}
+  <div class="actions" style="margin:0">
+    <button type="button" class="ghost sm" data-copy="{{ base_url }}/n/{{ business.slug }}">Copiar link público</button>
+    <a class="btn sm" href="/n/{{ business.slug }}" target="_blank" rel="noopener">Abrir como cliente ↗</a>
+  </div>
+  {% endif %}
+</div>
+
+{% if business %}
+<div class="sheet" style="background:var(--marker-soft);margin-bottom:28px">
+  <div class="between">
+    <div>
+      <small style="text-transform:uppercase;letter-spacing:.05em;font-weight:700">Seu link de agendamento</small>
+      <div style="font:600 1.05rem var(--display);margin-top:2px">{{ base_url }}/n/{{ business.slug }}</div>
+    </div>
+    <div class="actions" style="margin:0">
+      <button type="button" class="sm" data-copy="{{ base_url }}/n/{{ business.slug }}">Copiar link</button>
+      <a class="btn ghost sm" href="/negocio">Mudar endereço</a>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="split">
+  <div>
+    <h2>Próximos atendimentos <span class="muted">({{ rows|length }})</span></h2>
+    {% if rows %}
+    {% for r in rows %}
+    {% if loop.first or r.date != loop.previtem.date %}
+    <div class="day">{{ r.weekday }}, {{ r.date }}</div>
+    {% endif %}
+    <div class="item">
+      <div class="when">{{ r.start }}<small>{{ r.end }}</small></div>
+      <div class="grow">
+        <span class="title">{{ r.customer }}</span>
+        <small class="muted">{{ r.service }} com {{ r.professional }}</small>
+      </div>
+      <div class="end">
+        <a class="btn ghost sm" href="https://wa.me/{{ r.whatsapp }}" target="_blank" rel="noopener">WhatsApp</a>
+        <form class="inline" method="post" action="/agendamentos/{{ r.id }}/cancelar" data-confirm="Cancelar o horário de {{ r.customer }}?">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button type="submit" class="danger sm">Cancelar</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty"><strong>Nenhum agendamento marcado nos próximos {{ days }} dias.</strong>Compartilhe seu link público para os clientes começarem a agendar.</div>
+    {% endif %}
+  </div>
+
+  <aside>
+    <div class="sec" style="border-top:0;padding-top:0">
+      <h2>Profissionais <a href="/profissionais">Gerenciar</a></h2>
+      <div class="list">
+        {% for p in professionals_summary %}
+        <div class="item" style="padding:10px 0">
+          <div class="grow">
+            <span class="title"><a href="/profissionais/{{ p.id }}">{{ p.name }}</a></span>
+            <small class="muted" style="display:block">{{ p.services }}</small>
+            <small style="color:var(--muted)">{{ p.schedule }}</small>
+          </div>
+        </div>
+        {% else %}
+        <div class="empty" style="padding:14px 0"><a href="/profissionais">+ Cadastrar profissional</a></div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Serviços <a href="/servicos">Gerenciar</a></h2>
+      <div class="list">
+        {% for s in services_summary %}
+        <div class="item" style="padding:10px 0">
+          <div class="grow">
+            <span class="title">{{ s.name }}</span>
+            <small class="muted">{{ s.duration }} min</small>
+          </div>
+          {% if s.price != "—" %}<span class="price">{{ s.price }}</span>{% endif %}
+        </div>
+        {% else %}
+        <div class="empty" style="padding:14px 0"><a href="/servicos">+ Cadastrar serviço</a></div>
+        {% endfor %}
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

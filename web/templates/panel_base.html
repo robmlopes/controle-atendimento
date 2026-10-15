@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block shell_class %} wide{% endblock %}
+{% block nav %}
+{% set path = request.url.path %}
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="logo" href="/agenda">agenda</a>
+    <nav class="nav" aria-label="Principal">
+      <a href="/agenda" class="{{ 'active' if path.startswith('/agenda') or path == '/painel' }}">Agenda</a>
+      <a href="/financeiro" class="{{ 'active' if path.startswith('/financeiro') }}">Financeiro</a>
+      {% if is_owner %}
+      <a href="/profissionais" class="{{ 'active' if path.startswith('/profissionais') }}">Profissionais</a>
+      <a href="/servicos" class="{{ 'active' if path.startswith('/servicos') }}">Serviços</a>
+      <a href="/negocio" class="{{ 'active' if path.startswith('/negocio') }}">Meu negócio</a>
+      {% endif %}
+    </nav>
+    <form class="inline" method="post" action="/logout">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button type="submit" class="ghost sm">Sair</button>
+    </form>
+  </div>
+</header>
+
+<nav class="bottom-bar" aria-label="Navegação móvel">
+  <a href="/agenda" class="{{ 'active' if path.startswith('/agenda') or path == '/painel' }}">
+    <span>📅</span>Agenda
+  </a>
+  <a href="/financeiro" class="{{ 'active' if path.startswith('/financeiro') }}">
+    <span>💰</span>Financeiro
+  </a>
+  {% if is_owner %}
+  <a href="/profissionais" class="{{ 'active' if path.startswith('/profissionais') }}">
+    <span>👥</span>Equipe
+  </a>
+  <a href="/servicos" class="{{ 'active' if path.startswith('/servicos') }}">
+    <span>✂️</span>Serviços
+  </a>
+  <a href="/negocio" class="{{ 'active' if path.startswith('/negocio') }}">
+    <span>⚙️</span>Negócio
+  </a>
+  {% endif %}
+</nav>
+{% endblock %}

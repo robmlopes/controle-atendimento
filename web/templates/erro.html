@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Algo deu errado{% endblock %}
+{% block content %}
+<div class="narrow" style="margin-top:8vh">
+  <h1>Não deu certo</h1>
+  <p class="error" role="alert">{{ message }}</p>
+  <div class="actions"><a class="btn" href="{{ back or '/login' }}">Voltar</a></div>
+</div>
+{% endblock %}

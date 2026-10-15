@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "_ui.html" import brand, steps %}
+{% block title %}{{ pro.name }} — {{ business.name }}{% endblock %}
+{% block content %}
+{{ brand(business.name) }}
+{{ steps(2) }}
+<a class="back" href="/n/{{ business.slug }}">← Trocar de profissional</a>
+<h1>Horários com {{ pro.name }}</h1>
+
+<form method="get" action="/n/{{ business.slug }}/p/{{ pro.id }}" data-autosubmit>
+  <label>Serviço</label>
+  {% for s in services %}
+  <label class="opt">
+    <input type="radio" name="servico" value="{{ s.id }}" {% if s.id == selected_service_id %}checked{% endif %} required>
+    <span class="grow">{{ s.name }}<small style="display:block">{{ s.duration }} min</small></span>
+    {% if s.price %}<span class="price">R$ {{ s.price }}</span>{% endif %}
+  </label>
+  {% else %}
+  <div class="empty"><strong>{{ pro.name }} ainda não tem serviços.</strong>Escolha outro profissional.</div>
+  {% endfor %}
+
+  <label for="data">Data</label>
+  <input id="data" name="data" type="date" value="{{ selected_day }}" min="{{ min_date }}" max="{{ max_date }}" required>
+  <div class="actions"><button type="submit">Ver horários livres</button></div>
+</form>
+
+{% if has_searched %}
+<div class="sec">
+  <h2>{{ selected_day_label }}</h2>
+  {% if slots %}
+  <div class="agenda">
+    {% for h in range(0, 24) %}
+    {% set row = slots | selectattr('minute', 'ge', h * 60) | selectattr('minute', 'lt', h * 60 + 60) | list %}
+    {% if row %}
+    <div class="hour-row">
+      <div class="h">{{ '%02d' % h }}<small>h</small></div>
+      <div class="mins">
+        {% for s in row %}
+        <a class="min" href="/n/{{ business.slug }}/agendar?profissional={{ pro.id }}&servico={{ selected_service_id }}&data={{ selected_day }}&horario={{ s.minute }}">{{ s.start }}</a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty"><strong>Sem horário livre neste dia.</strong>Tente outra data ou outro serviço.</div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

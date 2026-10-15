@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% from "_ui.html" import brand, steps %}
+{% block title %}{{ business.name }} — Agendamento{% endblock %}
+{% block content %}
+{{ brand(business.name) }}
+{{ steps(1) }}
+<h1>Com quem você quer agendar?</h1>
+<p class="lead">Escolha o profissional. Depois você vê os serviços e os horários livres.</p>
+<div class="list">
+  {% for p in people %}
+  <a class="item" href="/n/{{ business.slug }}/p/{{ p.id }}">
+    <span class="avatar sm">{{ p.name[:1] }}</span>
+    <span class="grow"><span class="title">{{ p.name }}</span></span>
+    <span class="go">Ver horários →</span>
+  </a>
+  {% else %}
+  <div class="empty"><strong>Nenhum profissional disponível agora.</strong>Volte mais tarde ou fale com {{ business.name }}.</div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "panel_base.html" %}
+{% block title %}Novo Agendamento{% endblock %}
+{% block content %}
+<a class="back" href="/agenda">← Voltar para a agenda</a>
+<div class="narrow">
+  <h1>Novo agendamento</h1>
+  <p class="lead">Cadastre um atendimento direto para clientes que entraram em contato por WhatsApp, telefone ou balcão.</p>
+
+  {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+
+  <div class="sheet" style="margin-bottom:20px">
+    <form method="get" action="/agenda/novo" data-autosubmit>
+      {% if professionals %}
+      <label for="pro">Profissional</label>
+      <select id="pro" name="pro">
+        {% for p in professionals %}
+        <option value="{{ p.id }}" {% if selected_pro_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+
+      <label for="servico">Serviço</label>
+      <select id="servico" name="servico">
+        {% for s in services %}
+        <option value="{{ s.id }}" {% if selected_service_id == s.id %}selected{% endif %}>
+          {{ s.name }} ({{ s.duration_min }} min{% if s.price_cents %} · R$ {{ (s.price_cents / 100) | round(2) }}{% endif %})
+        </option>
+        {% else %}
+        <option value="">Nenhum serviço disponível para este profissional</option>
+        {% endfor %}
+      </select>
+
+      <label for="data">Data</label>
+      <input id="data" name="data" type="date" value="{{ selected_date }}" min="{{ today_date }}" required>
+    </form>
+  </div>
+
+  {% if slots %}
+  <div class="sheet">
+    <h2>Horários disponíveis</h2>
+    <form method="post" action="/agenda/novo">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="professional_id" value="{{ selected_pro_id }}">
+      <input type="hidden" name="service_id" value="{{ selected_service_id }}">
+      <input type="hidden" name="date" value="{{ selected_date }}">
+
+      <label for="start_min">Escolha o horário</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px">
+        {% for sl in slots %}
+        <label class="opt" style="margin:0;padding:8px 12px">
+          <input type="radio" name="start_min" value="{{ sl.minute }}" required>
+          <span>{{ sl.time }}</span>
+        </label>
+        {% endfor %}
+      </div>
+
+      <label for="customer_name">Nome do cliente</label>
+      <input id="customer_name" name="customer_name" placeholder="Ex: Lucas Pereira" required>
+
+      <label for="customer_phone">WhatsApp do cliente</label>
+      <input id="customer_phone" name="customer_phone" type="tel" placeholder="11 98888-7777" required>
+
+      <div class="actions">
+        <button type="submit" class="block">Confirmar agendamento</button>
+      </div>
+    </form>
+  </div>
+  {% else %}
+  <div class="empty">
+    <strong>Nenhum horário livre para esta data e serviço.</strong>
+    Escolha outro dia ou verifique a escala do profissional.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

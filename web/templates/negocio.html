@@ -1,0 +1,40 @@
+{% extends "panel_base.html" %}
+{% block title %}Dados do negócio{% endblock %}
+{% block content %}
+<div class="narrow">
+  <h1>Meu negócio</h1>
+  <p class="lead">Nome, endereço público da agenda e WhatsApp para contato dos clientes.</p>
+
+  {% if saved %}<div class="success">Dados atualizados com sucesso.</div>{% endif %}
+  {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+
+  <div class="sheet" style="background:var(--marker-soft);margin-bottom:24px">
+    <small style="text-transform:uppercase;letter-spacing:.05em;font-weight:700">Link público atual</small>
+    <div style="font:600 1.05rem var(--display);margin:4px 0 10px">{{ base_url }}/n/{{ business.slug }}</div>
+    <div class="actions" style="margin:0">
+      <button type="button" class="sm" data-copy="{{ base_url }}/n/{{ business.slug }}">Copiar link</button>
+      <a class="btn ghost sm" href="/n/{{ business.slug }}" target="_blank" rel="noopener">Abrir como cliente ↗</a>
+    </div>
+  </div>
+
+  <form method="post" action="/negocio">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <label for="name">Nome do negócio</label>
+    <input id="name" name="name" value="{{ business.name }}" maxlength="80" required>
+
+    <label for="slug">Endereço da agenda (link)</label>
+    <div class="prefix">
+      <span>/n/</span>
+      <input id="slug" name="slug" value="{{ business.slug }}" maxlength="40" pattern="[a-z0-9-]+" required>
+    </div>
+    <span class="hint">Use de 3 a 40 letras minúsculas, números ou hífen (ex: <code>barbearia-do-ze</code>).</span>
+
+    <label for="whatsapp">WhatsApp (opcional)</label>
+    <input id="whatsapp" name="whatsapp" value="{{ business.whatsapp or '' }}" placeholder="(11) 99999-8888">
+    <span class="hint">Quando preenchido, os clientes recebem um botão direto para confirmar ou tirar dúvidas pelo WhatsApp.</span>
+
+    <div class="actions"><button type="submit">Salvar alterações</button></div>
+  </form>
+</div>
+{% endblock %}

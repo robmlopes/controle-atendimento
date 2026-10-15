@@ -1,0 +1,158 @@
+{% extends "panel_base.html" %}
+{% block title %}{{ pro.name }} — Horários e serviços{% endblock %}
+{% block content %}
+<a class="back" href="/profissionais">← Voltar para profissionais</a>
+<h1>{{ pro.name }}</h1>
+<p class="lead">Defina quais serviços {{ pro.name }} atende, a comissão, a escala semanal de trabalho e o acesso individual.</p>
+
+{% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+
+<div class="split">
+  <div>
+    <div class="sec" style="border-top:0;padding-top:0">
+      <h2>Serviços atendidos</h2>
+      <form method="post" action="/profissionais/{{ pro.id }}/servicos">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        {% for s, checked in all_services %}
+        <label class="check">
+          <input type="checkbox" name="service_ids" value="{{ s.id }}" {% if checked %}checked{% endif %}>
+          <span class="grow">{{ s.name }}</span>
+          <small class="muted">{{ s.duration_min }} min</small>
+        </label>
+        {% else %}
+        <div class="empty">Nenhum serviço disponível. Cadastre primeiro em <a href="/servicos">Serviços</a>.</div>
+        {% endfor %}
+        <div class="actions"><button type="submit">Salvar serviços</button></div>
+      </form>
+    </div>
+
+    <div class="sec">
+      <h2>Horário semanal de trabalho</h2>
+      <div class="list">
+        {% for r in rules %}
+        <div class="item">
+          <div class="when">{{ r.start }}<small>{{ r.end }}</small></div>
+          <div class="grow"><span class="title">{{ r.name }}</span></div>
+          <div class="end">
+            <form class="inline" method="post" action="/profissionais/{{ pro.id }}/horarios/remover" data-confirm="Remover esta faixa de horário?">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <input type="hidden" name="weekday" value="{{ r.weekday }}">
+              <input type="hidden" name="start_min" value="{{ r.start_min }}">
+              <input type="hidden" name="end_min" value="{{ r.end_min }}">
+              <button type="submit" class="danger sm">Remover</button>
+            </form>
+          </div>
+        </div>
+        {% else %}
+        <div class="empty">Nenhum horário cadastrado. Adicione a escala no formulário ao lado.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Bloqueios e folgas</h2>
+      <div class="list">
+        {% for b in blocks %}
+        <div class="item">
+          <div class="grow">
+            <span class="title">{{ b.date }}</span>
+            <small class="muted">{% if b.whole %}Dia inteiro{% else %}{{ b.start }}–{{ b.end }}{% endif %}</small>
+          </div>
+          <div class="end">
+            <form class="inline" method="post" action="/profissionais/{{ pro.id }}/bloqueios/remover" data-confirm="Remover este bloqueio?">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <input type="hidden" name="day" value="{{ b.day }}">
+              <input type="hidden" name="start_min" value="{{ b.start_min }}">
+              <input type="hidden" name="end_min" value="{{ b.end_min }}">
+              <button type="submit" class="danger sm">Remover</button>
+            </form>
+          </div>
+        </div>
+        {% else %}
+        <div class="empty">Nenhum bloqueio futuro.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <aside>
+    <div class="sheet" style="margin-bottom:20px">
+      <h2>Dados e Comissão</h2>
+      <form method="post" action="/profissionais/{{ pro.id }}/editar">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label for="pname">Nome</label>
+        <input id="pname" name="name" value="{{ pro.name }}" required>
+
+        <label for="commission_pct">Comissão padrão (%)</label>
+        <input id="commission_pct" name="commission_pct" type="number" min="0" max="100" value="{{ commission_pct }}" required>
+
+        <div class="actions"><button type="submit" class="block">Salvar alterações</button></div>
+      </form>
+    </div>
+
+    <div class="sheet" style="margin-bottom:20px">
+      <h2>Acesso individual</h2>
+      {% if login_email %}
+      <p>Este profissional já possui login ativo com o e-mail:</p>
+      <div class="status" style="display:block;padding:8px 12px;font-size:.95rem"><strong>{{ login_email }}</strong></div>
+      {% else %}
+      <p class="hint">Crie uma conta para o profissional acessar sua própria agenda pelo celular.</p>
+      <form method="post" action="/profissionais/{{ pro.id }}/acesso">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label for="lemail">E-mail de acesso</label>
+        <input id="lemail" name="email" type="email" placeholder="pro@email.com" required>
+
+        <label for="lpass">Senha inicial</label>
+        <input id="lpass" name="password" type="password" minlength="8" placeholder="Mínimo 8 caracteres" required>
+
+        <div class="actions"><button type="submit" class="block">Criar acesso</button></div>
+      </form>
+      {% endif %}
+    </div>
+
+    <div class="sheet" style="margin-bottom:20px">
+      <h2>Adicionar horário semanal</h2>
+      <form method="post" action="/profissionais/{{ pro.id }}/horarios">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label for="weekday">Dia da semana</label>
+        <select id="weekday" name="weekday">
+          {% for n, label in weekdays %}<option value="{{ n }}">{{ label }}</option>{% endfor %}
+        </select>
+        <div class="fields">
+          <div class="field">
+            <label for="start">Início</label>
+            <input id="start" name="start" placeholder="09:00" required>
+          </div>
+          <div class="field">
+            <label for="end">Fim</label>
+            <input id="end" name="end" placeholder="18:00" required>
+          </div>
+        </div>
+        <span class="hint">Para intervalo de almoço, adicione duas faixas (ex.: 09:00–12:00 e 13:00–18:00).</span>
+        <div class="actions"><button type="submit" class="block">Adicionar faixa</button></div>
+      </form>
+    </div>
+
+    <div class="sheet">
+      <h2>Bloquear data</h2>
+      <form method="post" action="/profissionais/{{ pro.id }}/bloqueios">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label for="date">Data do bloqueio</label>
+        <input id="date" name="date" type="date" min="{{ today }}" required>
+        <div class="fields">
+          <div class="field">
+            <label for="bstart">Início (opcional)</label>
+            <input id="bstart" name="start" placeholder="HH:MM">
+          </div>
+          <div class="field">
+            <label for="bend">Fim (opcional)</label>
+            <input id="bend" name="end" placeholder="HH:MM">
+          </div>
+        </div>
+        <span class="hint">Deixe início e fim em branco para bloquear o dia inteiro.</span>
+        <div class="actions"><button type="submit" class="block">Salvar bloqueio</button></div>
+      </form>
+    </div>
+  </aside>
+</div>
+{% endblock %}

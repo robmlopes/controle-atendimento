@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_ui.html" import brand %}
+{% block title %}Agendamento — {{ view.business_name }}{% endblock %}
+{% block content %}
+{{ brand(view.business_name) }}
+<h1>{% if is_confirmed %}Agendamento confirmado!{% else %}Agendamento cancelado{% endif %}</h1>
+<p class="lead">{% if is_confirmed %}Seu horário está reservado. Guarde esta página: é por ela que você consulta ou cancela.{% else %}Este horário foi liberado e não está mais reservado.{% endif %}</p>
+
+<dl class="facts">
+  <div><dt>Profissional</dt><dd>{{ view.professional_name }}</dd></div>
+  <div><dt>Serviço</dt><dd>{{ view.service_name }}</dd></div>
+  <div><dt>Quando</dt><dd>{{ date_label }}, {{ start }} às {{ end }}</dd></div>
+  <div><dt>Nome</dt><dd>{{ view.booking.customer_name }}</dd></div>
+  <div><dt>Situação</dt><dd><span class="status {% if not is_confirmed %}off{% endif %}">{% if is_confirmed %}Confirmado{% else %}Cancelado{% endif %}</span></dd></div>
+</dl>
+
+{% if is_confirmed %}
+<div class="actions">
+  {% if wa_link %}<a class="btn wa" href="{{ wa_link }}" target="_blank" rel="noopener">Falar com {{ view.business_name }} no WhatsApp</a>{% endif %}
+  <form class="inline" method="post" action="/agendamento/{{ view.booking.cancel_token }}/cancelar" data-confirm="Cancelar este agendamento?">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <button type="submit" class="danger">Cancelar agendamento</button>
+  </form>
+</div>
+{% else %}
+<div class="actions"><a class="btn" href="/n/{{ view.business_slug }}">Agendar outro horário</a></div>
+{% endif %}
+{% endblock %}

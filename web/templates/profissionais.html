@@ -1,0 +1,55 @@
+{% extends "panel_base.html" %}
+{% block title %}Profissionais{% endblock %}
+{% block content %}
+<div class="split">
+  <div>
+    <h1>Profissionais</h1>
+    <p class="lead">Pessoas que atendem clientes. Configure horários, serviços, comissão e login individual.</p>
+
+    {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+
+    <div class="list">
+      {% for p in people %}
+      <div class="item">
+        <span class="avatar sm">{{ p.name[:1] }}</span>
+        <div class="grow">
+          <span class="title"><a href="/profissionais/{{ p.id }}">{{ p.name }}</a></span>
+          <small class="muted" style="display:block">
+            <strong>{{ p.commission_pct }}% comissão</strong>
+            {% if p.login_email %} · Acesso: {{ p.login_email }}{% else %} · Sem login individual{% endif %}
+          </small>
+          <small class="muted" style="display:block">{{ p.services }}</small>
+          <small style="color:var(--muted)">{{ p.schedule }}</small>
+        </div>
+        <div class="end">
+          <a class="btn ghost sm" href="/profissionais/{{ p.id }}">Configurar</a>
+          <form class="inline" method="post" action="/profissionais/{{ p.id }}/desativar" data-confirm="Desativar {{ p.name }}? Novos agendamentos não poderão ser feitos com ele(a).">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="danger sm">Desativar</button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty"><strong>Nenhum profissional cadastrado.</strong>Adicione o primeiro no formulário ao lado.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <aside>
+    <div class="sheet">
+      <h2>Novo profissional</h2>
+      <form method="post" action="/profissionais">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <label for="name">Nome completo ou apelido</label>
+        <input id="name" name="name" value="{{ name }}" maxlength="80" placeholder="Ex: Maria Santos" required>
+
+        <label for="commission_pct">Comissão padrão (%)</label>
+        <input id="commission_pct" name="commission_pct" type="number" min="0" max="100" value="60" placeholder="60" required>
+        <span class="hint">Porcentagem repassada ao profissional sobre os atendimentos concluídos.</span>
+
+        <div class="actions"><button type="submit" class="block">Cadastrar profissional</button></div>
+      </form>
+    </div>
+  </aside>
+</div>
+{% endblock %}
