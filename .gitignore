@@ -17,3 +17,7 @@ dist/
 # local databases (password hashes, sessions)
 *.db
 *.db-journal
+.aif/cache/
+.aif/history.jsonl
+.aif/last-check.json
+.aif/last-check.tmp
